@@ -27,7 +27,7 @@ DEP_LD_FLAGS="-L${BUILD_DIR_EXTERNAL}/${ANDROID_ABI}/lib $FFMPEG_EXTRA_LD_FLAGS"
 
 # Android 15 with 16 kb page size support
 # https://developer.android.com/guide/practices/page-sizes#compile-r27
-EXTRA_LDFLAGS="-Wl,-z,max-page-size=16384 $DEP_LD_FLAGS"
+EXTRA_LDFLAGS="-Wl,-Bsymbolic,-z,max-page-size=16384 $DEP_LD_FLAGS"
 
 ./configure \
   --prefix=${BUILD_DIR_FFMPEG}/${ANDROID_ABI} \
@@ -45,9 +45,13 @@ EXTRA_LDFLAGS="-Wl,-z,max-page-size=16384 $DEP_LD_FLAGS"
   --strip=${FAM_STRIP} \
   --extra-cflags="-O3 -fPIC $DEP_CFLAGS" \
   --extra-ldflags="$EXTRA_LDFLAGS" \
-  --enable-shared \
-  --disable-static \
+  --disable-shared \
+  --enable-static \
   --disable-vulkan \
+  --disable-asm \
+  --enable-jni \
+  --enable-mediacodec \
+  --enable-pic \
   --pkg-config=${PKG_CONFIG_EXECUTABLE} \
   ${EXTRA_BUILD_CONFIGURATION_FLAGS} \
   $ADDITIONAL_COMPONENTS || exit 1
