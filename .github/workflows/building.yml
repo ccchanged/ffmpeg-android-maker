@@ -1,0 +1,27 @@
+name: Building libraries
+on: [ push, workflow_dispatch ]
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        abi: [ "armeabi-v7a", "arm64-v8a" ]
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup the environment
+        run: |
+          sudo apt install meson nasm ninja-build
+
+      - name: Executing the script
+        run: |
+          export ANDROID_SDK_HOME=$ANDROID_HOME
+          export ANDROID_NDK_HOME=$ANDROID_NDK_LATEST_HOME
+          ./ffmpeg-android-maker.sh --enable-libaom --enable-libvpx --enable-libx264 --enable-libx265 --android-api-level=24 -abis=${{ matrix.abi }}
+
+      - name: Upload Output Binaries
+        uses: actions/upload-artifact@v6
+        with:
+          name: libs-${{ matrix.abi }}
+          path: output/
