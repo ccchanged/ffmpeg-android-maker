@@ -7,7 +7,7 @@
 
 This forked repository is made for building a mod with FFmpeg libraries on [Geode](https://geode-sdk.org), often called "[FFmpeg API](https://github.com/EclipseMenu/ffmpeg-api)". Geode is a SDK for modifying a game called Geometry Dash.
 
-<img src="https://github.com/Javernaut/ffmpeg-android-maker/blob/master/images/output_structure.png" width="280" align="right">
+<img src="https://github.com/ccchanged/ffmpeg-android-maker/blob/master/images/output_structure.png" width="280" align="right">
 
 Here is a script that downloads the source code of [FFmpeg](https://www.ffmpeg.org) library and assembles it for Android. The script produces shared libraries (\*.so files) as well as header files (\*.h files). The output structure is represented in the image.
 
