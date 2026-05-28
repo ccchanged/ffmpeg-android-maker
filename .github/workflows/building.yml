@@ -23,5 +23,5 @@ jobs:
       - name: Upload Output Binaries
         uses: actions/upload-artifact@v6
         with:
-          name: libs-${{ matrix.abi }}
+          name: libs
           path: output/
