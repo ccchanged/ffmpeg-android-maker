@@ -19,7 +19,7 @@ jobs:
         run: |
           export ANDROID_SDK_HOME=$ANDROID_HOME
           export ANDROID_NDK_HOME=$ANDROID_NDK_LATEST_HOME
-          ./ffmpeg-android-maker.sh --enable-libvpx --enable-libx264 --enable-libx265 --enable-dav1d --android-api-level=24 -abis=${{ matrix.abi }}
+          ./ffmpeg-android-maker.sh --enable-libaom --enable-libvpx --enable-libx264 --enable-libx265 --android-api-level=24 -abis=${{ matrix.abi }}
 
       - name: Upload Temporary ABI Artifact
         uses: actions/upload-artifact@v6
