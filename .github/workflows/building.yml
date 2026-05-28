@@ -1,27 +1,54 @@
-name: Building libraries
+name: Building
 on: [ workflow_dispatch, pull_request ]
+
 jobs:
   build:
-    runs-on: ubuntu-24.04
     strategy:
       matrix:
-        abi: [ "armeabi-v7a", "arm64-v8a" ]
-      fail-fast: false
+        abi: [ armeabi-v7a, arm64-v8a ]
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
 
       - name: Setup the environment
         run: |
+          sudo apt update
           sudo apt install meson nasm ninja-build
 
-      - name: Executing the script
+      - name: Build FFmpeg
         run: |
           export ANDROID_SDK_HOME=$ANDROID_HOME
           export ANDROID_NDK_HOME=$ANDROID_NDK_LATEST_HOME
-          ./ffmpeg-android-maker.sh --enable-libaom --enable-libvpx --enable-libx264 --enable-libx265 --android-api-level=24 -abis=${{ matrix.abi }}
+          ./ffmpeg-android-maker.sh --enable-libvpx --enable-libx264 --enable-libx265 --enable-dav1d --android-api-level=24 -abis=${{ matrix.abi }}
 
-      - name: Upload Output Binaries
+      - name: Upload Temporary ABI Artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: temp-libs-${{ matrix.abi }}
+          path: output/
+
+  merge_and_zip:
+    needs: build
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Download All Temporary Artifacts
+        uses: actions/download-artifact@v6
+        with:
+          pattern: temp-libs-*
+          path: temp_download
+
+      - name: Restructure Folders
+        run: |
+          mkdir -p final_output/armeabi-v7a
+          mkdir -p final_output/arm64-v8a
+          mv temp_download/temp-libs-armeabi-v7a/lib/armeabi-v7a final_output/armeabi-v7a/lib
+          mv temp_download/temp-libs-armeabi-v7a/include/armeabi-v7a final_output/armeabi-v7a/include
+          mv temp_download/temp-libs-arm64-v8a/lib/arm64-v8a final_output/arm64-v8a/lib
+          mv temp_download/temp-libs-arm64-v8a/include/arm64-v8a final_output/arm64-v8a/include
+
+      - name: Upload Combined Zip
         uses: actions/upload-artifact@v6
         with:
           name: libs
-          path: output/
+          path: final_output/
+          
