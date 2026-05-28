@@ -15,7 +15,7 @@ jobs:
           sudo apt update
           sudo apt install meson nasm ninja-build
 
-      - name: Build FFmpeg
+      - name: Start building
         run: |
           export ANDROID_SDK_HOME=$ANDROID_HOME
           export ANDROID_NDK_HOME=$ANDROID_NDK_LATEST_HOME
@@ -31,6 +31,11 @@ jobs:
     needs: build
     runs-on: ubuntu-24.04
     steps:
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+    
       - name: Download All Temporary Artifacts
         uses: actions/download-artifact@v6
         with:
@@ -51,4 +56,10 @@ jobs:
         with:
           name: libs
           path: final_output/
-          
+
+      - name: Delete Temporary Artifacts
+        uses: geekyeggo/delete-artifact@v6
+        with:
+          name: |
+            temp-libs-armeabi-v7a
+            temp-libs-arm64-v8a
