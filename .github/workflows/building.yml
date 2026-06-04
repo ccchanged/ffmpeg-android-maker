@@ -37,7 +37,7 @@ jobs:
           node-version: 24
     
       - name: Download All Temporary Artifacts
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v8
         with:
           pattern: temp-libs-*
           path: temp_download
