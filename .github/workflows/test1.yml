@@ -18,9 +18,16 @@ jobs:
 
       - name: Executing the script
         run: |
+          chmod +x ffmpeg-android-maker.sh
           export ANDROID_SDK_HOME=$ANDROID_HOME
           export ANDROID_NDK_HOME=$ANDROID_NDK_LATEST_HOME
-          ./ffmpeg-android-maker.sh --enable-libaom --enable-libvpx --enable-libx264 --enable-libx265 --android-api-level=24
+          ./ffmpeg-android-maker.sh \
+            --target-abis=${{ matrix.abi }} \
+            --enable-libaom \
+            --enable-libvpx \
+            --enable-libx264 \
+            --enable-libx265 \
+            --android-api-level=24
 
       - name: Upload ABI Artifact
         uses: actions/upload-artifact@v4
