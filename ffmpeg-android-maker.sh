@@ -29,12 +29,13 @@ export BUILD_DIR_FFMPEG=$BUILD_DIR/ffmpeg
 # to make easier referencing them when FFmpeg is being built.
 export BUILD_DIR_EXTERNAL=$BUILD_DIR/external
 
-# Function that copies *.so files and headers of the current ANDROID_ABI
-# to the proper place inside OUTPUT_DIR
+# Function that copies *.a static libs (FFmpeg's own + external deps) and headers
+# of the current ANDROID_ABI to the proper place inside OUTPUT_DIR
 function prepareOutput() {
   OUTPUT_LIB=${OUTPUT_DIR}/lib/${ANDROID_ABI}
   mkdir -p ${OUTPUT_LIB}
-  cp ${BUILD_DIR_FFMPEG}/${ANDROID_ABI}/lib/*.so ${OUTPUT_LIB}
+  cp ${BUILD_DIR_FFMPEG}/${ANDROID_ABI}/lib/*.a ${OUTPUT_LIB}
+  cp ${BUILD_DIR_EXTERNAL}/${ANDROID_ABI}/lib/*.a ${OUTPUT_LIB}
 
   OUTPUT_HEADERS=${OUTPUT_DIR}/include/${ANDROID_ABI}
   mkdir -p ${OUTPUT_HEADERS}
@@ -45,6 +46,12 @@ function prepareOutput() {
 # If the result file doesn't have 'TEXTREL' at all, then we are good.
 # Otherwise the whole script is interrupted
 function checkTextRelocations() {
+  # Text relocations only apply to shared objects (.so). Skip entirely
+  # when building static-only (no .so files produced).
+  if ! compgen -G "${BUILD_DIR_FFMPEG}/${ANDROID_ABI}/lib/*.so" > /dev/null; then
+    return 0
+  fi
+
   TEXT_REL_STATS_FILE=${STATS_DIR}/text-relocations.txt
   ${FAM_READELF} --dynamic ${BUILD_DIR_FFMPEG}/${ANDROID_ABI}/lib/*.so | grep 'TEXTREL\|File' >> ${TEXT_REL_STATS_FILE}
 
