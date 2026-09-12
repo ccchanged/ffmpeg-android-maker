@@ -52,7 +52,6 @@ EXTRA_LDFLAGS="-Wl,-z,max-page-size=16384 $DEP_LD_FLAGS"
   --enable-jni \
   --enable-mediacodec \
   --enable-pic \
-  --disable-neon \
   --pkg-config=${PKG_CONFIG_EXECUTABLE} \
   ${EXTRA_BUILD_CONFIGURATION_FLAGS} \
   $ADDITIONAL_COMPONENTS || exit 1
