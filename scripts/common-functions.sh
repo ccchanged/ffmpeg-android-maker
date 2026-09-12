@@ -17,7 +17,18 @@ function downloadTarArchive() {
   echo "Ensuring sources of ${LIBRARY_NAME} in ${LIBRARY_SOURCES}"
 
   if [[ ! -d "$LIBRARY_SOURCES" ]]; then
-    curl -LO ${DOWNLOAD_URL}
+    ATTEMPTS=0
+    MAX_ATTEMPTS=5
+    until curl -LO ${DOWNLOAD_URL} && gzip -t ${ARCHIVE_NAME} 2>/dev/null; do
+      ATTEMPTS=$((ATTEMPTS + 1))
+      rm -f ${ARCHIVE_NAME}
+      if [ ${ATTEMPTS} -ge ${MAX_ATTEMPTS} ]; then
+        echo "Failed to download a valid archive for ${LIBRARY_NAME} after ${MAX_ATTEMPTS} attempts"
+        exit 1
+      fi
+      echo "Download of ${LIBRARY_NAME} looked corrupt or incomplete, retrying (attempt ${ATTEMPTS})..."
+      sleep 3
+    done
 
     EXTRACTION_DIR="."
     if [ "$NEED_EXTRA_DIRECTORY" = true ] ; then
