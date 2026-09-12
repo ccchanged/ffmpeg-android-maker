@@ -18,12 +18,10 @@ jobs:
 
       - name: Executing the script
         run: |
-          chmod +x ffmpeg-android-maker.sh
-          export NDK_PATH="/usr/local/lib/android/sdk/ndk/26.3.11579264"
+          chmod +x ffmpeg-android-maker.sh          
           export ANDROID_SDK_HOME=$ANDROID_HOME
-          export ANDROID_NDK_HOME=$NDK_PATH
+          export ANDROID_NDK_HOME=$ANDROID_NDK_ROOT
           ./ffmpeg-android-maker.sh \
-            --ndk=$NDK_PATH \
             --target-abis=${{ matrix.abi }} \
             --enable-libaom \
             --enable-libvpx \
