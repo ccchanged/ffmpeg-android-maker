@@ -29,6 +29,14 @@ jobs:
             --enable-libx265 \
             --android-api-level=24
 
+      - name: Upload FFmpeg config.log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ffmpeg-config-log-${{ matrix.abi }}
+          path: "**/ffbuild/config.log"
+          if-no-files-found: warn
+
       - name: Upload ABI Artifact
         uses: actions/upload-artifact@v4
         with:
