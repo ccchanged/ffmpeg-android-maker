@@ -20,7 +20,7 @@ jobs:
         run: |
           chmod +x ffmpeg-android-maker.sh
           export ANDROID_SDK_HOME=$ANDROID_HOME
-          export ANDROID_NDK_HOME=$ANDROID_NDK_LATEST_HOME
+          export ANDROID_NDK_HOME=$ANDROID_NDK_ROOT
           ./ffmpeg-android-maker.sh \
             --target-abis=${{ matrix.abi }} \
             --enable-libaom \
