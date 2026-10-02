@@ -1,4 +1,4 @@
-name: Compiling shit
+name: Compiling
 on: [ workflow_dispatch ]
 
 jobs:
