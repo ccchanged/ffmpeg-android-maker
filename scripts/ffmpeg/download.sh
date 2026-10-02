@@ -62,3 +62,58 @@ case ${FFMPEG_SOURCE_TYPE} in
     ensureSourcesTar
 		;;
 esac
+
+# Android/AArch64 PIC fix: FFmpeg's tx_float NEON assembly takes the address
+# of FFT tables defined in another object file. A plain movrel uses ADRP/ADD
+# relocations that LLD rejects when the static archive is later linked into a
+# shared library. Use the GOT-based movrelx sequence for these external tables.
+if [ -f "${SOURCES_DIR_ffmpeg}/libavutil/aarch64/asm.S" ] && [ -f "${SOURCES_DIR_ffmpeg}/libavutil/aarch64/tx_float_neon.S" ]; then
+  python3 - "${SOURCES_DIR_ffmpeg}" <<'PYTHON' || exit 1
+from pathlib import Path
+import sys
+
+root = Path(sys.argv[1])
+asm = root / "libavutil/aarch64/asm.S"
+tx = root / "libavutil/aarch64/tx_float_neon.S"
+
+asm_text = asm.read_text()
+if ".macro  movrelx rd, val, offset=0" not in asm_text:
+    needle = ".endm\n\n#define GLUE(a, b) a ## b"
+    macro = """.endm
+
+/* Load the address of an external symbol through the GOT when building PIC.
+ * This avoids text relocations when a static FFmpeg archive is linked into
+ * a shared library on Android/AArch64. */
+.macro  movrelx rd, val, offset=0
+#if CONFIG_PIC
+#if defined(__APPLE__)
+        adrp            \\rd, \\val at GOTPAGE
+        ldr             \\rd, [\\rd, \\val at GOTPAGEOFF]
+#else
+        adrp            \\rd, :got:\\val
+        ldr             \\rd, [\\rd, :got_lo12:\\val]
+#endif
+    .if \\offset > 0
+        add             \\rd, \\rd, \\offset
+    .elseif \\offset < 0
+        sub             \\rd, \\rd, -(\\offset)
+    .endif
+#else
+        ldr             \\rd, =\\val+\\offset
+#endif
+.endm
+
+#define GLUE(a, b) a ## b"""
+    if needle not in asm_text:
+        raise SystemExit("Could not locate movrel macro insertion point in asm.S")
+    asm.write_text(asm_text.replace(needle, macro, 1))
+
+tx_text = tx.read_text()
+old_tx = r"movrel          \re, X(ff_tx_tab_\len\()_float)"
+new_tx = r"movrelx         \re, X(ff_tx_tab_\len\()_float)"
+if old_tx in tx_text:
+    tx.write_text(tx_text.replace(old_tx, new_tx, 1))
+elif new_tx not in tx_text:
+    raise SystemExit("Could not locate ff_tx_tab movrel in tx_float_neon.S")
+PYTHON
+fi
